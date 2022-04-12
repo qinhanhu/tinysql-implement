@@ -1,0 +1,15 @@
+proj1-2:
+	目标：实现DecodeRecordKey & DecodeIndexKeyPrefix
+	实现：根据 func EncodeRowKeyWithHandle 可以得知encode后的key的为[]byte("t[tableID]_r[rowID]")
+		 同理根据 EncodeIndexSeekKey 得到 indexKey 为[]byte("t[tableID]_i[indexID]indexValues")
+		 只需要根据ID的位置将其从byte数组中取出，再调用codec.DecodeInt解码即可。
+		 错误处理参考已有的 hasTablePrefix 和 hasRecordPrefixSep，实现hasIndexPrefixSep来一起判断Key是否合法。
+
+		 比较有趣的是codec.EncodeIntToCmpUint的思路，它将传入的有符号int64和一个uint64的signMask做异或运算，可以解决符号问题并且保证了原值在所有数中的相对顺序不变。
+
+	疑问：错误处理过程中注意到terror.go，比较好奇PingCAP对golang error的处理规范是什么呢？比如什么情况使用e.GenWithStack,什么时候用errors.Trace(err)。
+
+proj2:
+    目标：学习TinySQL如何将SQL语句转化为AST（抽象语法树），使用goyacc实现JoinTable的语法分析部分。
+    实现：根据parser test用例可以发现，规则文件parser.y中的JoinTable部分缺少"INNER/LEFT/RIGHT JOIN"和"ON"条件的语法规则。
+         只需根据 https://dev.mysql.com/doc/refman/8.0/en/join.html JOIN的语法定义对规则进行补充即可。

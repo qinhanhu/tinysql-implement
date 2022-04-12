@@ -21,6 +21,7 @@ require (
 	github.com/pingcap/goleveldb v0.0.0-20191226122134-f82aafb29989
 	github.com/pingcap/log v0.0.0-20200117041106-d28c14d3b1cd
 	github.com/pingcap/tipb v0.0.0-20200212061130-c4d518eb1d60
+	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/sirupsen/logrus v1.2.0
 	github.com/soheilhy/cmux v0.1.4
 	github.com/spaolacci/murmur3 v1.1.0
@@ -29,6 +30,7 @@ require (
 	go.uber.org/automaxprocs v1.2.0
 	go.uber.org/zap v1.14.0
 	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
+	golang.org/x/sys v0.0.0-20220408201424-a24fb2fb8a0f // indirect
 	golang.org/x/text v0.3.2
 	golang.org/x/tools v0.0.0-20200304193943-95d2e580d8eb
 	google.golang.org/grpc v1.25.1

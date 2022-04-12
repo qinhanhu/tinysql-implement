@@ -43,6 +43,8 @@ const (
 	RecordRowKeyLen       = prefixLen + idLen /*handle*/
 	tablePrefixLength     = 1
 	recordPrefixSepLength = 2
+	IndexKeyMinLen		  = prefixLen + idLen
+	indexPrefixSepLength  = 2
 )
 
 // TableSplitKeyLen is the length of key 't{table_id}' which is used for table split.
@@ -72,6 +74,19 @@ func EncodeRowKeyWithHandle(tableID int64, handle int64) kv.Key {
 // DecodeRecordKey decodes the key and gets the tableID, handle.
 func DecodeRecordKey(key kv.Key) (tableID int64, handle int64, err error) {
 	/* Your code here */
+	k := key
+	if len(key) != RecordRowKeyLen || !hasTablePrefix(key) || !hasRecordPrefixSep(key[TableSplitKeyLen:]) {
+		return 0, 0, errInvalidRecordKey.GenWithStack("invalid record key - %q", k)
+	}
+	var remain []byte
+	remain, tableID, err = codec.DecodeInt(key[tablePrefixLength:])
+	if err != nil {
+		return 0, 0, errors.Trace(err)
+	}
+	_, handle, err = codec.DecodeInt(remain[recordPrefixSepLength:])
+	if err != nil {
+		return 0, 0, errors.Trace(err)
+	}
 	return
 }
 
@@ -95,6 +110,19 @@ func EncodeIndexSeekKey(tableID int64, idxID int64, encodedValue []byte) kv.Key 
 // DecodeIndexKeyPrefix decodes the key and gets the tableID, indexID, indexValues.
 func DecodeIndexKeyPrefix(key kv.Key) (tableID int64, indexID int64, indexValues []byte, err error) {
 	/* Your code here */
+	k := key
+	if len(key) < IndexKeyMinLen || !hasTablePrefix(key) || !hasIndexPrefixSep(key[TableSplitKeyLen:]) {
+		return 0, 0, nil, errInvalidIndexKey.GenWithStack("invalid index key - %q", k)
+	}
+	var remain []byte
+	remain, tableID, err = codec.DecodeInt(key[tablePrefixLength:])
+	if err != nil {
+		return 0, 0, nil, errors.Trace(err)
+	}
+	indexValues, indexID, err = codec.DecodeInt(remain[indexPrefixSepLength:])
+	if err != nil {
+		return 0, 0, nil, errors.Trace(err)
+	}
 	return tableID, indexID, indexValues, nil
 }
 
@@ -159,6 +187,10 @@ func hasTablePrefix(key kv.Key) bool {
 
 func hasRecordPrefixSep(key kv.Key) bool {
 	return key[0] == recordPrefixSep[0] && key[1] == recordPrefixSep[1]
+}
+
+func hasIndexPrefixSep(key kv.Key) bool {
+	return key[0] == indexPrefixSep[0] && key[1] == indexPrefixSep[1]
 }
 
 // DecodeMetaKey decodes the key and get the meta key and meta field.
